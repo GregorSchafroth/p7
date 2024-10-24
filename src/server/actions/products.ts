@@ -6,6 +6,7 @@ import { z } from 'zod'
 import {
   createProduct as createProductDb,
   deleteProduct as deleteProductDb,
+  updateProduct as updateProductDb,
 } from '@/server/db/products'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -25,6 +26,26 @@ export async function createProduct(
   redirect(`/dashboard/products/${id}/edit?tab=countries`)
 }
 
+export async function updateProduct(
+  id: string,
+  unsafeData: z.infer<typeof productDetailsSchema>
+): Promise<{ error: boolean; message: string } | undefined> {
+  const { userId } = await auth()
+  const { success, data } = productDetailsSchema.safeParse(unsafeData)
+  const errorMessage = "There was an error updating your product"
+
+  if (!success || userId == null) {
+    return { error: true, message: errorMessage }
+  }
+
+  const isSuccess = await updateProductDb(data, { id, userId })
+
+  return {
+    error: !isSuccess,
+    message: isSuccess ? "Product details updated" : errorMessage,
+  }
+}
+
 export async function deleteProduct(id: string) {
   const { userId } = await auth()
   const errorMessage = 'There was an error deleting your product'
@@ -33,10 +54,8 @@ export async function deleteProduct(id: string) {
 
   const isSuccess = await deleteProductDb({ id, userId })
 
-  
-
   return {
-    error: isSuccess,
+    error: !isSuccess,
     message: isSuccess ? 'successfully deleted your product' : errorMessage,
   }
 }

@@ -9,6 +9,20 @@ import {
 } from '@/lib/cashe'
 import { and, eq } from 'drizzle-orm'
 
+export function getProductCountryGroups({
+  productId,
+  userId,
+}: {
+  productId: string
+  userId: string
+}) {
+  const cacheFn = dbCache(getProductCountryGroupsInternal, {
+    tags: [],
+  })
+
+  return cacheFn({ productId, userId })
+}
+
 export function getProducts(userId: string, { limit }: { limit?: number }) {
   const cacheFn = dbCache(getProductsInternal, {
     tags: [getUserTag(userId, CACHE_TAGS.products)],
@@ -53,6 +67,26 @@ export async function createProduct(data: typeof ProductTable.$inferInsert) {
   return newProduct
 }
 
+export async function updateProduct(
+  data: Partial<typeof ProductTable.$inferInsert>,
+  { id, userId }: { id: string; userId: string }
+) {
+  const { rowCount } = await db
+    .update(ProductTable)
+    .set(data)
+    .where(and(eq(ProductTable.clerkUserId, userId), eq(ProductTable.id, id)))
+
+  if (rowCount > 0) {
+    revalidateDbCache({
+      tag: CACHE_TAGS.products,
+      userId,
+      id,
+    })
+  }
+
+  return rowCount > 0
+}
+
 export async function deleteProduct({
   id,
   userId,
@@ -73,6 +107,46 @@ export async function deleteProduct({
   }
 
   return rowCount > 0
+}
+
+async function getProductCountryGroupsInternal({
+  userId,
+  productId,
+}: {
+  userId: string
+  productId: string
+}) {
+  const product = await getProduct({ id: productId, userId })
+  if (product === null) return []
+
+  const data = await db.query.CountryGroupTable.findMany({
+    with: {
+      countries: {
+        columns: {
+          name: true,
+          code: true,
+        },
+      },
+      countryGroupDiscounts: {
+        columns: {
+          coupon: true,
+          discountPercentage: true,
+        },
+        where: ({ productId: id }, { eq }) => eq(id, productId),
+        limit: 1,
+      },
+    },
+  })
+
+  return data.map((group) => {
+    return {
+      id: group.id,
+      name: group.name,
+      recommendedDiscountPercentage: group.recommendedDiscountPercentage,
+      countries: group.countries,
+      discount: group.countryGroupDiscounts.at(0),
+    }
+  })
 }
 
 function getProductsInternal(userId: string, { limit }: { limit?: number }) {

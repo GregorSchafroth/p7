@@ -16,22 +16,35 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { productDetailsSchema } from '@/schemas/products'
-import { createProduct } from '@/server/actions/products'
+import { createProduct, updateProduct } from '@/server/actions/products'
 import { useToast } from '@/hooks/use-toast'
 
-export function ProductDetailsForm() {
+export function ProductDetailsForm({
+  product,
+}: {
+  product?: {
+    id: string
+    name: string
+    description: string | null
+    url: string
+  }
+}) {
   const { toast } = useToast()
   const form = useForm<z.infer<typeof productDetailsSchema>>({
     resolver: zodResolver(productDetailsSchema),
-    defaultValues: {
-      name: '',
-      url: '',
-      description: '',
-    },
+    defaultValues: product
+      ? { ...product, description: product.description ?? '' }
+      : {
+          name: '',
+          url: '',
+          description: '',
+        },
   })
 
   async function onSubmit(values: z.infer<typeof productDetailsSchema>) {
-    const data = await createProduct(values)
+    const action =
+      product == null ? createProduct : updateProduct.bind(null, product.id)
+    const data = await action(values)
 
     if (data?.message) {
       toast({
@@ -54,7 +67,10 @@ export function ProductDetailsForm() {
             name='name'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Product Name</FormLabel>
+                <FormLabel>
+                  Product Name
+                  {/* <RequiredLabelIcon /> */}
+                </FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -67,7 +83,10 @@ export function ProductDetailsForm() {
             name='url'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Enter your website URL</FormLabel>
+                <FormLabel>
+                  Enter your website URL
+                  {/* <RequiredLabelIcon /> */}
+                </FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -90,7 +109,7 @@ export function ProductDetailsForm() {
                 <Textarea className='min-h-20 resize-none' {...field} />
               </FormControl>
               <FormDescription>
-                An optional description to help distringtuish your product from
+                An optional description to help distinguish your product from
                 other products
               </FormDescription>
               <FormMessage />

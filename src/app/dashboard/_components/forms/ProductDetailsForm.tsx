@@ -20,7 +20,7 @@ import { createProduct } from '@/server/actions/products'
 import { useToast } from '@/hooks/use-toast'
 
 export function ProductDetailsForm() {
-  const { toast } = useToast
+  const { toast } = useToast()
   const form = useForm<z.infer<typeof productDetailsSchema>>({
     resolver: zodResolver(productDetailsSchema),
     defaultValues: {

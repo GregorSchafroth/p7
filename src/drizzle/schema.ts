@@ -1,3 +1,4 @@
+// src/drizzle/schema.ts
 import { subscriptionTiers, TierNames } from '@/data/subscriptionTiers';
 import { relations } from 'drizzle-orm';
 import {
@@ -155,6 +156,21 @@ export const CountryGroupDiscountTable = pgTable(
     pk: primaryKey({ columns: [table.countryGroupId, table.productId] }),
   })
 )
+
+export const countryGroupDiscountRelations = relations(
+  CountryGroupDiscountTable,
+  ({ one }) => ({
+    product: one(ProductTable, {
+      fields: [CountryGroupDiscountTable.productId],
+      references: [ProductTable.id],
+    }),
+    countryGroup: one(CountryGroupTable, {
+      fields: [CountryGroupDiscountTable.countryGroupId],
+      references: [CountryGroupTable.id],
+    }),
+  })
+)
+
 
 export const TierEnum = pgEnum(
   "tier",

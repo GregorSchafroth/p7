@@ -1,6 +1,6 @@
 import { db } from '@/drizzle/db'
 import { ProductTable, UserSubscriptionTable } from '@/drizzle/schema'
-import { CACHE_TAGS, revalidateDbCache } from '@/lib/cashe'
+import { CACHE_TAGS, revalidateDbCache } from '@/lib/cache'
 import { eq } from 'drizzle-orm'
 
 export async function deleteUser(clerkUserId: string) {

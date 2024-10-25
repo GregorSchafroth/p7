@@ -1,8 +1,9 @@
 // src/app/dashboard/products/[productId]/edit/page.tsx
 
 import { CountryDiscountsForm } from '@/app/dashboard/_components/forms/CountryDiscountsForm'
+import { ProductCustomizationForm } from '@/app/dashboard/_components/forms/ProductCustomizationForm'
 import { ProductDetailsForm } from '@/app/dashboard/_components/forms/ProductDetailsForm'
-import PageWithBackButton from '@/app/dashboard/_components/PageWithBackButton'
+import { PageWithBackButton } from '@/app/dashboard/_components/PageWithBackButton'
 import {
   Card,
   CardContent,
@@ -11,7 +12,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getProduct, getProductCountryGroups } from '@/server/db/products'
+import { getProduct, getProductCountryGroups, getProductCustomization } from '@/server/db/products'
+import { canCustomizeBanner, canRemoveBranding } from '@/server/permissions'
 import { auth } from '@clerk/nextjs/server'
 import { TabsContent } from '@radix-ui/react-tabs'
 import { notFound } from 'next/navigation'
@@ -127,11 +129,11 @@ async function CustomizationsTab({
         <CardTitle className="text-xl">Banner Customization</CardTitle>
       </CardHeader>
       <CardContent>
-        {/* <ProductCustomizationForm
+        <ProductCustomizationForm
           canRemoveBranding={await canRemoveBranding(userId)}
           canCustomizeBanner={await canCustomizeBanner(userId)}
           customization={customization}
-        /> */}
+        />
       </CardContent>
     </Card>
   )

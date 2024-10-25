@@ -3,7 +3,7 @@ import { CaretLeftIcon } from "@radix-ui/react-icons"
 import Link from "next/link"
 import { ReactNode } from "react"
 
-const PageWithBackButton = ({
+export function PageWithBackButton({
   backButtonHref,
   pageTitle,
   children,
@@ -11,7 +11,7 @@ const PageWithBackButton = ({
   backButtonHref: string
   pageTitle: string
   children: ReactNode
-}) => {
+}) {
   return (
     <div className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-8">
       <Button size="icon" variant="outline" className="rounded-full" asChild>
@@ -23,7 +23,5 @@ const PageWithBackButton = ({
       <h1 className="text-2xl font-semibold self-center">{pageTitle}</h1>
       <div className="col-start-2">{children}</div>
     </div>
-  
   )
 }
-export default PageWithBackButton
